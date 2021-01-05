@@ -5,11 +5,29 @@ import (
 	"net/http"
 	"net/url"
 	s "strings"
+	"os"
+	"bufio"
+	"fmt"
 )
 
 type UrlinfoController struct{}
 
-var BlockList = [3]string {"google.com", "google.com/foobar", "yahoo.com?123=4"}
+var blocklist []string 
+var blocklistLen int
+
+func init() {
+	var err error
+	blocklistFilename := os.Getenv("BLOCKLIST_FILENAME")
+	if blocklistFilename == "" {
+		blocklistFilename = "blocklist.txt"
+	}
+	blocklist, err = readLines(blocklistFilename)
+	if err != nil {
+		fmt.Println("Error: could not open blocklist file", blocklistFilename)
+		os.Exit(1)
+	}
+	blocklistLen = len(blocklist)
+}
 
 func (u UrlinfoController) Retrieve(c *gin.Context) {
 	originalUrl := parseUrl(c)
@@ -30,11 +48,27 @@ func parseUrl(c *gin.Context) (string) {
 }
 
 func isBlocklisted(url string) (bool) {
-	for i := 0; i < 3; i++ {
-		if BlockList[i] == url {
+	for i := 0; i < blocklistLen; i++ {
+		if blocklist[i] == url {
 			return true
 		}
 	}
 	return false
+}
+
+func readLines(path string) ([]string, error) {
+    file, err := os.Open(path)
+    if err != nil {
+        return nil, err
+    }
+
+    defer file.Close()
+
+    var lines []string
+    scanner := bufio.NewScanner(file)
+    for scanner.Scan() {
+        lines = append(lines, scanner.Text())
+    }
+    return lines, nil
 }
 

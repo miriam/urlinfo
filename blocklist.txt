@@ -1,0 +1,3 @@
+google.com
+google.com/foobar
+yahoo.com?123=4
