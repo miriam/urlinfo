@@ -13,3 +13,16 @@ $ go get -u github.com/gin-gonic/gin
 ```
 go run main.go
 ```
+
+You can specify your own blocklist file with an environment variable:
+
+```
+BLOCKLIST_FILENAME=blocklist.txt go run main.go
+```
+
+4. To test, run:
+
+```
+go test
+```
+
