@@ -23,6 +23,6 @@ BLOCKLIST_FILENAME=blocklist.txt go run main.go
 4. To test, run:
 
 ```
-go test
+BLOCKLIST_FILENAME=blocklist-test.txt go test
 ```
 
