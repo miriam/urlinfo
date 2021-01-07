@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"net/url"
-	s "strings"
 	"os"
 	"bufio"
 	"fmt"
@@ -34,14 +33,13 @@ func (u UrlinfoController) Get(c *gin.Context) {
 	
 	c.JSON(http.StatusOK, gin.H{
 		"blocklisted": isBlocklisted(originalUrl),
-		"originalUrl": originalUrl,
 	})
 }
 
 func parseUrl(c *gin.Context) (string) {
 	originalUrl := &url.URL{}
 	originalUrl.Host = c.Param("hostnameAndPort")
-	originalUrl.Path = s.TrimSuffix(c.Param("originalPath"), "/")
+	originalUrl.Path = c.Param("originalPath")
 	originalUrl.RawQuery = c.Request.URL.RawQuery
 	urlString := originalUrl.String()
 	return urlString[2:len(urlString)]
