@@ -6,8 +6,8 @@ import "magoldbe/urlinfo/controllers"
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 	urlinfo := new(controllers.UrlinfoController)
-	router.GET("/urlinfo/1/:hostnameAndPort/*originalPath", urlinfo.Retrieve)
-	router.GET("/urlinfo/1/:hostnameAndPort", urlinfo.Retrieve)
+	router.GET("/urlinfo/1/:hostnameAndPort/*originalPath", urlinfo.Get)
+	router.GET("/urlinfo/1/:hostnameAndPort", urlinfo.Get)
 
 	return router
 }

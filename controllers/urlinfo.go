@@ -29,7 +29,7 @@ func init() {
 	blocklistLen = len(blocklist)
 }
 
-func (u UrlinfoController) Retrieve(c *gin.Context) {
+func (u UrlinfoController) Get(c *gin.Context) {
 	originalUrl := parseUrl(c)
 	
 	c.JSON(http.StatusOK, gin.H{
