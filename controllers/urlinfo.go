@@ -7,25 +7,36 @@ import (
 	"os"
 	"bufio"
 	"fmt"
+	"context"
+	"github.com/go-redis/redis/v8"
+
 )
 
 type UrlinfoController struct{}
 
-var blocklist []string 
-var blocklistLen int
+var (
+	ctx = context.Background()
+	rdb *redis.Client
+)
 
 func init() {
+	rdb = redis.NewClient(&redis.Options{
+        	Addr:     "localhost:6379",
+         	Password: "",
+         	DB:       0,
+   	})
+
 	var err error
 	blocklistFilename := os.Getenv("BLOCKLIST_FILENAME")
 	if blocklistFilename == "" {
 		blocklistFilename = "blocklist.txt"
 	}
-	blocklist, err = readLines(blocklistFilename)
+	err = readLines(blocklistFilename)
 	if err != nil {
-		fmt.Println("Error: could not open blocklist file", blocklistFilename)
+		fmt.Println("Error: could not load blocklist")
+		panic(err)
 		os.Exit(1)
 	}
-	blocklistLen = len(blocklist)
 }
 
 func (u UrlinfoController) Get(c *gin.Context) {
@@ -46,27 +57,33 @@ func parseUrl(c *gin.Context) (string) {
 }
 
 func isBlocklisted(url string) (bool) {
-	for i := 0; i < blocklistLen; i++ {
-		if blocklist[i] == url {
-			return true
-		}
-	}
-	return false
+    val, err := rdb.SIsMember(ctx, "blocklist", url).Result()
+    fmt.Println("looked up key2: %s %s", val, url)
+    if err == redis.Nil {
+        fmt.Println("key2 does not exist")
+    } else if err != nil {
+        panic(err)
+    } 
+	return val 
 }
 
-func readLines(path string) ([]string, error) {
+func readLines(path string) (error) {
     file, err := os.Open(path)
     if err != nil {
-        return nil, err
+        return err
     }
 
     defer file.Close()
 
-    var lines []string
+	var line string
     scanner := bufio.NewScanner(file)
     for scanner.Scan() {
-        lines = append(lines, scanner.Text())
+		line = scanner.Text()
+		_, err := rdb.SAdd(ctx, "blocklist", line).Result()
+		if err != nil {
+			return err
+		}
     }
-    return lines, nil
+    return nil
 }
 
