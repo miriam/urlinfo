@@ -1,11 +1,10 @@
 package main
 
 import "github.com/gin-gonic/gin"
-import "magoldbe/urlinfo/controllers"
 
 func setupRouter() *gin.Engine {
 	router := gin.Default()
-	urlinfo := new(controllers.UrlinfoController)
+	urlinfo := new(UrlinfoController)
 	router.GET("/urlinfo/1/:hostnameAndPort/*originalPath", urlinfo.Get)
 	router.GET("/urlinfo/1/:hostnameAndPort", urlinfo.Get)
 

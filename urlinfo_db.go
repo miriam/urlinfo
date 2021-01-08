@@ -1,18 +1,12 @@
-package controllers
+package main
 
 import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-	"net/url"
+	"context"
+	"github.com/go-redis/redis/v8"
 	"os"
 	"bufio"
 	"fmt"
-	"context"
-	"github.com/go-redis/redis/v8"
-
 )
-
-type UrlinfoController struct{}
 
 var (
 	ctx = context.Background()
@@ -39,28 +33,10 @@ func init() {
 	}
 }
 
-func (u UrlinfoController) Get(c *gin.Context) {
-	originalUrl := parseUrl(c)
-	
-	c.JSON(http.StatusOK, gin.H{
-		"blocklisted": isBlocklisted(originalUrl),
-	})
-}
-
-func parseUrl(c *gin.Context) (string) {
-	originalUrl := &url.URL{}
-	originalUrl.Host = c.Param("hostnameAndPort")
-	originalUrl.Path = c.Param("originalPath")
-	originalUrl.RawQuery = c.Request.URL.RawQuery
-	urlString := originalUrl.String()
-	return urlString[2:len(urlString)]
-}
-
 func isBlocklisted(url string) (bool) {
     val, err := rdb.SIsMember(ctx, "blocklist", url).Result()
-    fmt.Println("looked up key2: %s %s", val, url)
     if err == redis.Nil {
-        fmt.Println("key2 does not exist")
+        fmt.Println("URL does not exist")
     } else if err != nil {
         panic(err)
     } 
