@@ -1,0 +1,11 @@
+google.com
+google.com/foobar
+google.com/frob/
+yahoo.com?123=4
+yahoo.com/a/b/c/d/3
+yahoo.com/a/b/c/d/3/
+go.hotbot.eu/2.3/4.5/?x=y
+yahoo.com?123=4&f=x&.43owe?^%$0f
+example.com:443
+example.com:444/
+example.com:443/1/2/3?a=b
