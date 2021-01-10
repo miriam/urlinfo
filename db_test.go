@@ -6,10 +6,12 @@ import (
 )
 
 func TestBlocklistContainsItem(t *testing.T) {
-	assert.True(t, isBlocklisted("google.com"))
+	db := new(UrlinfoDb)
+	assert.True(t, db.isBlocklisted("google.com"))
 }
 
 func TestBlocklistDoesNotContainItem(t *testing.T) {
-	assert.False(t, isBlocklisted("hotbot.com"))
+	db := new(UrlinfoDb)
+	assert.False(t, db.isBlocklisted("hotbot.com"))
 }
 

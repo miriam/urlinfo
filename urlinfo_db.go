@@ -13,6 +13,8 @@ var (
 	rdb *redis.Client
 )
 
+type UrlinfoDb struct{}
+
 func init() {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -33,7 +35,7 @@ func init() {
 	}
 }
 
-func isBlocklisted(url string) bool {
+func (u UrlinfoDb) isBlocklisted(url string) bool {
 	val, err := rdb.SIsMember(ctx, "blocklist", url).Result()
 	if err == redis.Nil {
 		fmt.Println("URL does not exist")

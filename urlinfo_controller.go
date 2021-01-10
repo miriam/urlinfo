@@ -9,10 +9,11 @@ import (
 type UrlinfoController struct{}
 
 func (u UrlinfoController) Get(c *gin.Context) {
+	db := new(UrlinfoDb)
 	originalUrl := parseUrl(c)
 
 	c.JSON(http.StatusOK, gin.H{
-		"blocklisted": isBlocklisted(originalUrl),
+		"blocklisted": db.isBlocklisted(originalUrl),
 	})
 }
 
