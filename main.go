@@ -2,6 +2,9 @@ package main
 
 import "github.com/gin-gonic/gin"
 
+func init() {
+}
+
 func setupRouter() *gin.Engine {
 	router := gin.Default()
 	urlinfo := new(UrlinfoController)
@@ -15,4 +18,3 @@ func main() {
 	router := setupRouter()
 	router.Run(":8080")
 }
-

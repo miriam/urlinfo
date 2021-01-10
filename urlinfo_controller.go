@@ -10,13 +10,13 @@ type UrlinfoController struct{}
 
 func (u UrlinfoController) Get(c *gin.Context) {
 	originalUrl := parseUrl(c)
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"blocklisted": isBlocklisted(originalUrl),
 	})
 }
 
-func parseUrl(c *gin.Context) (string) {
+func parseUrl(c *gin.Context) string {
 	originalUrl := &url.URL{}
 	originalUrl.Host = c.Param("hostnameAndPort")
 	originalUrl.Path = c.Param("originalPath")
@@ -24,4 +24,3 @@ func parseUrl(c *gin.Context) (string) {
 	urlString := originalUrl.String()
 	return urlString[2:len(urlString)]
 }
-

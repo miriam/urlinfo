@@ -1,15 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"fmt"
 
 	"github.com/stretchr/testify/assert"
 )
 
-var TestCases = [][2]string {
+var TestCases = [][2]string{
 	{"google.com", "true"},
 	{"google.com/", "false"},
 
@@ -42,9 +42,8 @@ func TestBlocklistBlocksListMembers(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		expectedBody := fmt.Sprintf("{\"blocklisted\":%s}", TestCases[i][1])
-	
+
 		assert.Equal(t, 200, w.Code)
 		assert.Equal(t, expectedBody, w.Body.String())
 	}
 }
-

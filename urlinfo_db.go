@@ -1,11 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"context"
+	"fmt"
 	"github.com/go-redis/redis/v8"
 	"os"
-	"bufio"
-	"fmt"
 )
 
 var (
@@ -15,10 +15,10 @@ var (
 
 func init() {
 	rdb = redis.NewClient(&redis.Options{
-        	Addr:     "localhost:6379",
-         	Password: "",
-         	DB:       0,
-   	})
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
 
 	var err error
 	blocklistFilename := os.Getenv("BLOCKLIST_FILENAME")
@@ -33,33 +33,32 @@ func init() {
 	}
 }
 
-func isBlocklisted(url string) (bool) {
-    val, err := rdb.SIsMember(ctx, "blocklist", url).Result()
-    if err == redis.Nil {
-        fmt.Println("URL does not exist")
-    } else if err != nil {
-        panic(err)
-    } 
-	return val 
+func isBlocklisted(url string) bool {
+	val, err := rdb.SIsMember(ctx, "blocklist", url).Result()
+	if err == redis.Nil {
+		fmt.Println("URL does not exist")
+	} else if err != nil {
+		panic(err)
+	}
+	return val
 }
 
-func readLines(path string) (error) {
-    file, err := os.Open(path)
-    if err != nil {
-        return err
-    }
+func readLines(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
 
-    defer file.Close()
+	defer file.Close()
 
 	var line string
-    scanner := bufio.NewScanner(file)
-    for scanner.Scan() {
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
 		line = scanner.Text()
 		_, err := rdb.SAdd(ctx, "blocklist", line).Result()
 		if err != nil {
 			return err
 		}
-    }
-    return nil
+	}
+	return nil
 }
-
