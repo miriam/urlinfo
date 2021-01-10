@@ -2,27 +2,29 @@
 
 This is the first application I've written in golang. I chose the gin framework because it seemed lightweight and intuitive, and the documentation is good. I also used https://github.com/vsouza/go-gin-boilerplate as a guide for golang standards around file structure and code style, since I'm new to golang and not up to speed with its norms.
 
+I decided to use redis load up the blocklist from a static file in a `set`. I chose redis sets because look-up time for set members is O(1), and it is a commonly used and understood technology.
+
 # Extension considerations
 
 ## The size of the URL list could grow infinitely. How might you scale this beyond the memory capacity of the system? 
 
-To grow the blocklist beyond the memory capacity of the application, I recommend using a database and a cache.
+To grow the blocklist beyond the memory capacity of the application, I recommend a cache, such as Redis. In the unlikely event that the blocklist is too long to store in Redis, consider using a database with a cache in front of it.
 
-The database can be a simple document store, for instance dynamodb, if you stick with the AWS ecosystem. The entire blocklist should be written to the DB. 
+Because we are simply testing set membership, a document-store database should be sufficient.
 
-To cut down on latency, the application should maintain an in-memory cache. It should cache both DB hits *and* misses. This is to avoid look-ups for commonly-requested hosts that are not blocked. For instance, assuming a commonly requested host like google.com is allowed, we want to return that decision quickly.
+To cut down on DB latency, the application should maintain either an in-memory cache or use an external caching service. It should cache both DB hits *and* misses. This is to avoid DB look-ups for commonly-requested hosts that are not blocked. For instance, assuming a commonly requested host like google.com is allowed, we want to return that decision quickly.
 
 To ensure that the most-commonly requested hosts get the fastest responses, I reccommend using a least-recently-used cache eviction policy. Depending on the requirements for this service, we can start with a TTL of 5 minutes for all entries. We can also use a loading cache to re-fetch data in the background when this TTL is reached.
 
 ## Assume that the number of requests will exceed the capacity of a single system, describe how might you solve this, and how might this change if you have to distribute this workload to an additional region, such as Europe. 
 
-Horizontal scaling is a good choice for increasing capacity for this application. We can run multiple instances of the application, all connecting to the same database. Each instance can keep its own in-memory cache. If we are concened about cache dilution among the multiple app instances, we can lift the cache out to a distributed service, for instance AWS elasticache.
+Horizontal scaling is a good choice for increasing capacity for this application. We can run multiple instances of the application, all connecting to the same database. Each instance can keep its own in-memory cache. If we are concened about cache dilution among the multiple app instances, we can lift the cache out to a distributed service.
 
-If we need to deploy this service to multiple geos, I suggest using a cloud-based caching service, and a distributed database, such as dynamoDB. Updates to the block-list can then be made to any DB instance and get replicated to all DB instances with eventual consistency.
+If we need to deploy this service to multiple geos, I suggest using a cloud-based caching service, and a distributed database, such as AWS elasticache and dynamoDB. Updates to the block-list can then be made to any DB instance and get replicated to all DB instances with eventual consistency.
 
 ## What are some strategies you might use to update the service with new URLs? Updates may be as much as 5 thousand URLs a day with updates arriving every 10 minutes.
 
-I would expose update capabilities in the service's API that require additional authenication. For instance, we could restrict it to an IP allowlist and mTLS. We could extend the existing API in a RESTful manner.
+I would expose update capabilities in the service's API that require additional authenication. For instance, we could restrict it to an IP allowlist and mTLS. We could extend the existing API folowing REST norms.
 
 To add to the blocklist:
 PUT /urlinfo/1/{hostname_and_port}/{original_path_and_query_string}
@@ -46,13 +48,11 @@ In addition to investigating, I will also do a quick analysis of impact. If this
 
 ## Does that change anything you’ve done in the app?
 
-I did not instrument my app with comprehensive telemetry. If I were to run this in production, I would report out RED to whatever monitoring service(s) we used and integrate with our APM.
+I did not instrument my app at all. If I were to run this in production, I would report out RED to whatever monitoring service(s) we used and integrate with our APM.
 
 ## What are some considerations for the lifecycle of the app?
 
 Data persistence and consistency is one concern. Because we could receive updates to the blocklist via the API at any time, deploys should correctly drain their connection pools and roll across instances, so that we can continue to service these updates.
-
-If we stick with in-app caches, we'll have to live with cold caches on fresh instances. Alternately, we could use a distributed cache, if this is a problem.
 
 Rolling deploys is also important for consumers of this API. Because this API is in the call stack for individuals' web requests, its deploys must have zero downtime.
 

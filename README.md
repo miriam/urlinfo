@@ -1,3 +1,24 @@
+Urlinfo is a web service that returns blocklist status for URLs.
+
+To see if a URL is blocklisted, request the following endpoint, specifying hostname and optionally, a port, path and query string:
+```
+http://0.0.0.0:8080/urlinfo/1/:hostnameAndPort/:path/:maybeMorePath?some=OptionalQueryString
+```
+
+Successful json responses are of the form HTTP 200 with body:
+
+```
+{\"blocklisted\":true}
+```
+
+or 
+
+```
+{\"blocklisted\":false}
+```
+
+Requests that do not adhere to the above format will return an HTTP 404.
+
 This application is written in golang.
 
 You will need golang >=1.12 and redis installed. To install golang, visit https://golang.org/ and follow the installation instructions for your operating system.
@@ -17,29 +38,13 @@ To start redis and the web server, run
 > go run main.go urlinfo_controller.go urlinfo_db.go
 ```
 
-You with the web server running, you can make requests to http://0.0.0.0:8080/
-
-To request blocklist status for a url, request http://0.0.0.0:8080/urlinfo/1/:hostnameAndPort/:whatever/:path?some=query
-
-Responses are Json with format:
-
-```
-{\"blocklisted\":true}
-```
-
-or
-
-```
-{\"blocklisted\":false}
-```
-
-The blocklist is loaded at start-up from a file. Default file is blocklist.txt. You can specify your own blocklist file with an environment variable:
+The blocklist is loaded at start-up from a file. The default file is `blocklist.txt`. You can specify your own blocklist file with an environment variable:
 
 ```
 > BLOCKLIST_FILENAME=blocklist.txt go run main.go urlinfo_controller.go urlinfo_db.go
 ```
 
-To test, please specify the testing blocklist and run:
+To test, please specify the testing blocklist by running:
 
 ```
 > redis-server & 
